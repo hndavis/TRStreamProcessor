@@ -112,5 +112,11 @@ namespace TRStreamProcessor.Data
             }
             return bldr.ToString();
         }
+
+        public TrsTypedField GetColumn(string name)
+        {
+
+            return Fields[name];
+        }
     }
 }

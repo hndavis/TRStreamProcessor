@@ -6,37 +6,104 @@ using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using TRStreamProcessor.Data;
 
 namespace TRStreamProcessor.Stream
 {
-    public class TrsStream <TTuppleIn, TTuppleOut>  
-        where TTuppleIn: TrsTupple, new()
-        where TTuppleOut: TrsTupple, new()
+    public class TrsStream<TObservable, TObserver, TTupleIn, TTupleOut> : IDisposable, IObservable<TTupleOut>
+        where TTupleIn : TrsTupple, new()
+        where TTupleOut : TrsTupple, new()
+        where TObservable : IObservable<TTupleIn>
+        where TObserver : IObserver<TTupleOut>
+
+
     {
-        Guid id = new Guid();
-        IObservable<TrsTupple> InStream;
-        private IDisposable InObserver;
-        private IObserver<TTuppleOut> outStream;
+        private readonly Guid id = new Guid();
+
+        public Guid Guid
+        {
+            get { return id; }
+        }
+        public String Name {  get; private set; }
+
+
+        private IDisposable InternalObserver;
+        private readonly TObservable InObservable;
+        protected TObserver OutStream;  //todo shoud be  private IObserver<TTuppleOut> OutStream;
+        private IObservable<TTupleOut> OutObservable;
+
+        private readonly Func<TTupleIn, TTupleOut> Transform;
 
         //  TRSTupples to listens to
-        public void SetInStream(IObservable<TTuppleIn> inStream)
+        public TrsStream(String name,TObservable inObservable)
         {
-            InStream = inStream;
-            InObserver = Subscribe();
+            Transform = defaultTransform;
+            OutObservable = setUpOutStream();
+            InObservable = inObservable;
+            InternalObserver = Subscribe();
+            Name = name;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Dispose()
+        {
+            //may not need
+            Dispose(true);
+        }
+
+        protected void Dispose(bool bDispose)
+        {
+            OutObservable = null;
+            InternalObserver = null;
+        }
+
+        
+
+        TTupleOut defaultTransform(TTupleIn tIn)
+        {
+            return tIn as TTupleOut;
+        }
+
+        public TObserver GetOutStream()
+        {
+            return OutStream ;
+        }
+
+        public IObservable<TTupleOut> GetObservable()
+        {
+            return OutObservable;
+        }
+
+        public IDisposable Subscribe(IObserver<TTupleOut> observer)
+        {
+            return OutObservable.Subscribe(observer);
         }
 
         public IDisposable Subscribe()
         {
-            return InStream.Subscribe();
+            if (InObservable != null)
+                return InObservable.Subscribe(t =>
+                {
+                //    Console.WriteLine("{0}: In Subscribe :" + t.ToString(),Name);
+                    process(Transform(t));
+                });
+            else
+            {
+                //throw new Exception("In Stream not set");
+                return null;  /// could be first point in a stream/flow
+            }
         }
 
-        public bool pub(TTuppleOut tupple)
+        public bool process(TTupleOut t)
         {
-            if (outStream != null)
+//            Console.WriteLine("{0}: In process :" + t.ToString(), Name);
+            if (OutStream != null)
             {
-                outStream.OnNext(tupple);
+                OutStream.OnNext(t);
                 return true;
             }
             else
@@ -48,18 +115,19 @@ namespace TRStreamProcessor.Stream
 
 
         // list of stream to publish to.
-        public IObservable<TTuppleOut> GetOutStream()
+         protected virtual IObservable<TTupleOut> setUpOutStream()
         {
-            return Observable.Create<TTuppleOut>(
-                (IObserver<TTuppleOut> observer) =>
+           return (IObservable<TTupleOut>) Observable.Create<TTupleOut>(
+                 observer =>
                 {
-                    outStream = observer;
-                   // observer.OnNext(new TTuppleOut());
-                   // observer.OnCompleted();
-                   // Thread.Sleep(1000);
+                    OutStream = (TObserver)observer;
+                   
                     return Disposable.Create(() => Console.WriteLine("Observer has unsubscribed"));
                 }
                 );
+          
         }
+
+       
     }
 }

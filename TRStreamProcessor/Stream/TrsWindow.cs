@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +27,16 @@ namespace TRStreamProcessor.Stream
      * it also listens to a TrsStream for activity
      */
 
-    public class TrsWindow<TTuppleIn, TTuppleOut> : TrsStream<TTuppleIn, TTuppleOut>, 
+    //http://stackoverflow.com/questions/17020011/iobserver-and-iobservable-in-c-sharp-for-observer-vs-delegates-events
+    public class TrsWindow<TObservable, TObserver,TTuppleIn, TTupleOut> : TrsStream<TObservable, TObserver, TTuppleIn, TTupleOut >, 
         IStreamListener, IActiveWindow
         where TTuppleIn : TrsTupple, new()
-        where TTuppleOut : TrsTupple, new()
-        
+        where TTupleOut : TrsTupple, new()
+         where TObservable : IObservable<TTuppleIn>
+        where TObserver : IObserver<TTupleOut>
+
+
+
     {
         private readonly ConcurrentQueue<TrsTuppleQWraper<TTuppleIn>> ValuesInProgress = new ConcurrentQueue<TrsTuppleQWraper<TTuppleIn>>();
         private readonly ConcurrentDictionary<string, Row> CurrWindowValues = new ConcurrentDictionary<string, Row>();
@@ -39,14 +46,22 @@ namespace TRStreamProcessor.Stream
         private readonly Dictionary<string, TrsTypedField> ComputedColumns = new Dictionary<string,TrsTypedField>();
         private readonly TaskScheduler InCommingScheduler;
         private readonly TaskScheduler OutGoingScheduler;
+        private readonly TrsTuppleFactory OutDataPointFactory;
 
-      
-        private readonly  CancellationTokenSource  Cts = new CancellationTokenSource();
+        private List<IObserver<TrsTupple>> observers;
 
-        public TrsWindow(IObservable<TTuppleIn> obs, List<TrsTypedField> groubyColumns, List<TrsTypedField> computedColumns,
+        TrsInt DataPointSumDef;
+        TrsString KeyValueDef;
+
+       private readonly  CancellationTokenSource  Cts = new CancellationTokenSource();
+
+        public TTupleOut TuppleOutDef;
+
+        public TrsWindow(String name, TObservable obs, TObserver observer, TTupleOut tOutDef,
+            List<TrsTypedField> groubyColumns, List<TrsTypedField> computedColumns,
             int amount = -1, TrsWindowType type = TrsWindowType.MaxTime,
             TaskScheduler inCommingScheduler = null,
-            TaskScheduler outGoingScheduler = null)
+            TaskScheduler outGoingScheduler = null) : base (name,obs)
 
         {
             Obs = obs;
@@ -66,9 +81,65 @@ namespace TRStreamProcessor.Stream
                     throw new Exception("Amount must be greater than 1");
                 WindowDelay = TimeSpan.FromSeconds(amount);
             }
+
+            TuppleOutDef = tOutDef;
+
+            KeyValueDef = new TrsString("keyValue") { Name = "RowKey" };
+
+            DataPointSumDef = new TrsInt(0) { Name = "Sum" };
+
+            var defDataPointTupple = new TrsTuppleDef(KeyValueDef, DataPointSumDef);
+            OutDataPointFactory = new TrsTuppleFactory(defDataPointTupple);
+        }
+        public IDisposable Subscribe(IObserver<TrsTupple> observer)
+        {
+            if (!observers.Contains(observer))
+                observers.Add(observer);
+            return new Unsubscriber(observers, observer);
+        }
+        private class Unsubscriber : IDisposable
+        {
+            private List<IObserver<TrsTupple>> _observers;
+            private IObserver<TrsTupple> _observer;
+
+            public Unsubscriber(List<IObserver<TrsTupple>> observers, IObserver<TrsTupple> observer)
+            {
+                this._observers = observers;
+                this._observer = observer;
+            }
+
+            public void Dispose()
+            {
+                if (_observer != null && _observers.Contains(_observer))
+                    _observers.Remove(_observer);
+            }
         }
 
-    
+        public void EndTransmission()
+        {
+            foreach (var observer in observers.ToArray())
+                if (observers.Contains(observer))
+                    observer.OnCompleted();
+
+            observers.Clear();
+        }
+
+        public void SendMessage(TrsTupple trsTupple)
+        {
+            foreach (var observer in observers)
+            {
+               
+                    observer.OnNext(trsTupple);
+            }
+        }
+
+        public class MessageUnknownException : Exception
+        {
+            internal MessageUnknownException()
+            {
+            }
+        }
+
         IDisposable MsgHandle;
         private readonly IObservable<TTuppleIn> Obs;
 
@@ -83,17 +154,46 @@ namespace TRStreamProcessor.Stream
 
             MsgHandle = Obs.Subscribe(t =>
             {
-               // Console.WriteLine("W{0} Received: On {1} " + t.ToString(), Guid, Thread.CurrentThread.ManagedThreadId);
+//                Console.WriteLine("{0}  Received On {1} --> {2} ", Name, t.ToString(), Thread.CurrentThread.ManagedThreadId);
                 HandleIncomingTupples(t);
             }
                 );
         }
-
-        TTuppleOut RowUpdated(string key)
+        protected override IObservable<TTupleOut> setUpOutStream()
         {
-            Console.WriteLine("Recomputed   {0}:{1}" , key, CurrWindowValues[key].ComputedColumns[0].sum);
+           
+            return (IObservable<TTupleOut>)Observable.Create<TTupleOut>(
+                    observer =>
+                    {
+                        OutStream = (TObserver)observer;
+
+                        return Disposable.Create(() => Console.WriteLine("Observer has unsubscribed"));
+                    }
+                   );
+        }
+
+        
+
+        void OnRowUpdated(string key)
+        {
+            Console.WriteLine("{0}: Recomputed   {1}:{2}" ,Name, key, CurrWindowValues[key].ComputedColumns[0].sum);
             Console.WriteLine();
-            return new TTuppleOut();  
+            var keyValue = new TrsString(key) { Name = "RowKey" };
+            
+            var dataPointSum = new TrsInt((int)CurrWindowValues[key].ComputedColumns[0].sum) { Name = "Sum" };
+
+
+            if (OutStream != null)
+            {
+                var tOut = OutDataPointFactory.Create(keyValue, dataPointSum);
+                if (tOut != null)
+                    OutStream.OnNext((TTupleOut) tOut); //todo   should not need cast -- find other way
+
+                SendMessage(tOut);
+            }
+
+           
+
         }
 
     
@@ -180,7 +280,7 @@ namespace TRStreamProcessor.Stream
                     return row;
                 })
             ;
-            RowUpdated(RowKey(t));
+            OnRowUpdated(RowKey(t));
         }
         
         
@@ -230,7 +330,7 @@ namespace TRStreamProcessor.Stream
                
                 return row;
                    });
-            RowUpdated(RowKey(t));
+            OnRowUpdated(RowKey(t));
         }
         
         private class ColumnStatistic

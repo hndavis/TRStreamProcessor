@@ -1,0 +1,2 @@
+# TrsStreams
+Lite CEP engine
