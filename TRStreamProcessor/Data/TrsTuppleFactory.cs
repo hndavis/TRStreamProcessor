@@ -14,7 +14,7 @@ namespace TRStreamProcessor.Data
             Definition = definition;
         }
 
-        public TrsTupple Create(params TrsTypedField[] fields)
+        public TrsTupple Create(params ITrsTypedField[] fields)
         {
             if ( Definition.orderedFieldNames.Count != fields.Length )
                 throw new Exception("Wrong number of Fields");

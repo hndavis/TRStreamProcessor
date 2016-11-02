@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -42,23 +43,24 @@ namespace TRStreamProcessor.Stream
         private readonly ConcurrentDictionary<string, Row> CurrWindowValues = new ConcurrentDictionary<string, Row>();
         public readonly  Guid Guid = Guid.NewGuid();
         private readonly TimeSpan WindowDelay ;//= TimeSpan.FromSeconds(60);
-        private readonly List<TrsTypedField> GroupByColumns;
-        private readonly Dictionary<string, TrsTypedField> ComputedColumns = new Dictionary<string,TrsTypedField>();
+        private readonly List<TrsString> GroupByColumns;
+        private readonly Dictionary<string, TrsLong> ComputedColumns = new Dictionary<string,TrsLong>();
         private readonly TaskScheduler InCommingScheduler;
         private readonly TaskScheduler OutGoingScheduler;
         private readonly TrsTuppleFactory OutDataPointFactory;
 
         private List<IObserver<TrsTupple>> observers;
 
-        TrsInt DataPointSumDef;
+    
         TrsString KeyValueDef;
 
        private readonly  CancellationTokenSource  Cts = new CancellationTokenSource();
 
-        public TTupleOut TuppleOutDef;
+        
 
-        public TrsWindow(String name, TObservable obs, TObserver observer, TTupleOut tOutDef,
-            List<TrsTypedField> groubyColumns, List<TrsTypedField> computedColumns,
+        public TrsWindow(String name, TObservable obs, 
+           
+            List<TrsString> groubyColumns, List<TrsLong> computedColumns,
             int amount = -1, TrsWindowType type = TrsWindowType.MaxTime,
             TaskScheduler inCommingScheduler = null,
             TaskScheduler outGoingScheduler = null) : base (name,obs)
@@ -82,14 +84,16 @@ namespace TRStreamProcessor.Stream
                 WindowDelay = TimeSpan.FromSeconds(amount);
             }
 
-            TuppleOutDef = tOutDef;
+           
 
             KeyValueDef = new TrsString("keyValue") { Name = "RowKey" };
 
-            DataPointSumDef = new TrsInt(0) { Name = "Sum" };
+            TrsLong dataPointSumDef = new TrsLong(0) { Name = "Sum" };
 
-            var defDataPointTupple = new TrsTuppleDef(KeyValueDef, DataPointSumDef);
+            var defDataPointTupple = new TrsTuppleDef(KeyValueDef, dataPointSumDef);
             OutDataPointFactory = new TrsTuppleFactory(defDataPointTupple);
+            //if ( observer != null)
+            //     Subscribe(observer);
         }
         public IDisposable Subscribe(IObserver<TrsTupple> observer)
         {
@@ -176,11 +180,11 @@ namespace TRStreamProcessor.Stream
 
         void OnRowUpdated(string key)
         {
-            Console.WriteLine("{0}: Recomputed   {1}:{2}" ,Name, key, CurrWindowValues[key].ComputedColumns[0].sum);
-            Console.WriteLine();
+            Debug.WriteLine("{0}: Recomputed   {1}:{2}" ,Name, key, CurrWindowValues[key].ComputedColumns[0].sum);
+          
             var keyValue = new TrsString(key) { Name = "RowKey" };
             
-            var dataPointSum = new TrsInt((int)CurrWindowValues[key].ComputedColumns[0].sum) { Name = "Sum" };
+            var dataPointSum = new TrsLong((int)CurrWindowValues[key].ComputedColumns[0].sum) { Name = "Sum" };
 
 
             if (OutStream != null)
@@ -189,7 +193,7 @@ namespace TRStreamProcessor.Stream
                 if (tOut != null)
                     OutStream.OnNext((TTupleOut) tOut); //todo   should not need cast -- find other way
 
-                SendMessage(tOut);
+              
             }
 
            
@@ -209,7 +213,7 @@ namespace TRStreamProcessor.Stream
             CurrWindowValues.AddOrUpdate(RowKey(t),
                 (k) =>
                 {
-                    Row r = new Row {GroupedFields = new List<TrsTypedField>()};
+                    Row r = new Row {GroupedFields = new List<ITrsTypedField>()};
                     foreach (var col in GroupByColumns  )
                     {
                         TrsString colString = new TrsString();
@@ -236,6 +240,11 @@ namespace TRStreamProcessor.Stream
 
                                 case TrsType.Integer:
                                 colStat.avg = (int)t.Fields[computedColumn.Name].RawVal;
+                                colStat.sum = colStat.avg;
+                                break;
+
+                            case TrsType.Long:
+                                colStat.avg = (long)t.Fields[computedColumn.Name].RawVal;
                                 colStat.sum = colStat.avg;
                                 break;
 
@@ -266,6 +275,11 @@ namespace TRStreamProcessor.Stream
 
                             case TrsType.Integer:
                                 colStat.sum += (int)t.Fields[colStat.underlyingName].RawVal;
+                                colStat.avg = colStat.sum / colStat.count;
+                                break;
+
+                            case TrsType.Long:
+                                colStat.sum += (long)t.Fields[colStat.underlyingName].RawVal;
                                 colStat.avg = colStat.sum / colStat.count;
                                 break;
 
@@ -320,6 +334,11 @@ namespace TRStreamProcessor.Stream
                             colStat.avg = colStat.sum / colStat.count;
                             break;
 
+                        case TrsType.Long:
+                            colStat.sum -= (long)t.Fields[colStat.underlyingName].RawVal;
+                            colStat.avg = colStat.sum / colStat.count;
+                            break;
+
                         default:
                             throw new Exception("Type not supported for compute.");
 
@@ -343,7 +362,7 @@ namespace TRStreamProcessor.Stream
 
         private class Row
         {
-            public List<TrsTypedField> GroupedFields;
+            public List<ITrsTypedField> GroupedFields;
 
             public List<ColumnStatistic> ComputedColumns;
             public DateTime InsertTime;

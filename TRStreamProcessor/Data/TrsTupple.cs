@@ -10,7 +10,7 @@ namespace TRStreamProcessor.Data
     public class TrsTupple : iTupple
     {
         public string Name { get; set; }
-        public Dictionary<String, TrsTypedField> Fields = new Dictionary<string, TrsTypedField>();
+        public Dictionary<String, ITrsTypedField> Fields = new Dictionary<string, ITrsTypedField>();
         public DateTime CreateDate = DateTime.Now;
         public readonly List<String> orderedFieldNames = new List<string>();
         Guid id = Guid.NewGuid();
@@ -26,7 +26,7 @@ namespace TRStreamProcessor.Data
 
         }
 
-        public TrsTupple(TrsTuppleDef tuppleDef, TrsTypedField[] fields)
+        public TrsTupple(TrsTuppleDef tuppleDef, ITrsTypedField[] fields)
         {
             Definition = tuppleDef;
             Add(fields);
@@ -38,19 +38,19 @@ namespace TRStreamProcessor.Data
             Name = name;
         }
 
-        public TrsTupple(string name, params TrsTypedField[] fields)
+        public TrsTupple(string name, params ITrsTypedField[] fields)
         {
             Name = name;
             Add(fields);
 
         }
 
-        public TrsTupple(params TrsTypedField[] fields)
+        public TrsTupple(params ITrsTypedField[] fields)
         {
                 Add(fields);
         }
 
-        protected bool Add(TrsTypedField[] fields)
+        protected bool Add(ITrsTypedField[] fields)
         {
             foreach (var field in fields)
             {
@@ -61,7 +61,7 @@ namespace TRStreamProcessor.Data
 
 
 
-        protected bool AddDef(TrsTypedField fld)
+        protected bool AddDef(ITrsTypedField fld)
         {
            // if ( orderedFieldNames.Count == 0)
             orderedFieldNames.Add(fld.Name);
@@ -69,7 +69,7 @@ namespace TRStreamProcessor.Data
             return true;
         }
 
-        protected bool AddDef(TrsTypedField[] fields)
+        protected bool AddDef(ITrsTypedField[] fields)
         {
             foreach (var field in fields)
             {
@@ -80,7 +80,7 @@ namespace TRStreamProcessor.Data
 
 
 
-        protected bool Add(TrsTypedField fld)
+        protected bool Add(ITrsTypedField fld)
         {
             // if ( orderedFieldNames.Count == 0)
             if ( string.IsNullOrEmpty(fld.Name ))
@@ -113,7 +113,7 @@ namespace TRStreamProcessor.Data
             return bldr.ToString();
         }
 
-        public TrsTypedField GetColumn(string name)
+        public ITrsTypedField GetColumn(string name)
         {
 
             return Fields[name];

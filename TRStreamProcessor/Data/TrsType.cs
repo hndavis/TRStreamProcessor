@@ -8,16 +8,29 @@ namespace TRStreamProcessor.Data
     {
         String,
         Integer,
-        Flt
+        Flt,
+        Long
     }
-    public class TrsTypedField
+    public interface ITrsTypedField
     {
-        public string Name { get; set; }
-        public  object RawVal;
-        public TrsType ttype { get; set; }  
+         string Name { get; set; }
+         object RawVal { get; }
+         TrsType ttype { get; set; }  
     }
 
-    public class TrsString : TrsTypedField
+    public class TrsTypedField<T> :ITrsTypedField
+    {
+        public string Name { get; set; }
+        public virtual object RawVal
+        {
+            get { return (object) Val; }
+            
+        }
+        public TrsType ttype { get; set; }
+        public T Val { get; set; }
+    }
+
+    public class TrsString : TrsTypedField<string>
     {
         public TrsString()
         {
@@ -30,11 +43,7 @@ namespace TRStreamProcessor.Data
             Val = val;
         }
 
-        public  String Val {
-            get { return (string)RawVal; }
-            set { RawVal = value; }
-        }
-
+       
         public override string ToString()
         {
             return Val;
@@ -42,7 +51,7 @@ namespace TRStreamProcessor.Data
 
     }
 
-    public class TrsInt : TrsTypedField
+    public class TrsInt : TrsTypedField<int>
     {
         public TrsInt()
         {
@@ -53,9 +62,7 @@ namespace TRStreamProcessor.Data
             ttype = TrsType.Integer;
             Val = val;
         }
-        public int Val {
-            get { return (int) RawVal; } 
-            set { RawVal = value; } }
+        
 
         public override string ToString()
         {
@@ -63,7 +70,25 @@ namespace TRStreamProcessor.Data
         }
     }
 
-    public class TrsFloat : TrsTypedField
+    public class TrsLong : TrsTypedField<long>
+    {
+        public TrsLong()
+        {
+            ttype = TrsType.Long;
+        }
+        public TrsLong(long val)
+        {
+            ttype = TrsType.Long;
+            Val = val;
+        }
+        
+        public override string ToString()
+        {
+            return Val.ToString();
+        }
+    }
+
+    public class TrsFloat : TrsTypedField<double>
     {
         public TrsFloat()
         {
@@ -81,18 +106,7 @@ namespace TRStreamProcessor.Data
             ttype = TrsType.Flt;
             Val = val;
         }
-
-
-
-        public double Val {
-            get
-            {
-               
-                 return (double) RawVal;
-             
-            }
-            set { RawVal = value; }
-        }
+        
 
         public override string ToString()
         {
