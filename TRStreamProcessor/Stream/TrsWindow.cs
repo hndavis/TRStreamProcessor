@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -36,12 +37,9 @@ namespace TRStreamProcessor.Stream
          where TObservable : IObservable<TTuppleIn>
         where TObserver : IObserver<TTupleOut>
 
-
-
     {
         private readonly ConcurrentQueue<TrsTuppleQWraper<TTuppleIn>> ValuesInProgress = new ConcurrentQueue<TrsTuppleQWraper<TTuppleIn>>();
         private readonly ConcurrentDictionary<string, Row> CurrWindowValues = new ConcurrentDictionary<string, Row>();
-        public readonly  Guid Guid = Guid.NewGuid();
         private readonly TimeSpan WindowDelay ;//= TimeSpan.FromSeconds(60);
         private readonly List<TrsString> GroupByColumns;
         private readonly Dictionary<string, TrsLong> ComputedColumns = new Dictionary<string,TrsLong>();
@@ -50,13 +48,10 @@ namespace TRStreamProcessor.Stream
         private readonly TrsTuppleFactory OutDataPointFactory;
 
         private List<IObserver<TrsTupple>> observers;
-
     
         TrsString KeyValueDef;
 
        private readonly  CancellationTokenSource  Cts = new CancellationTokenSource();
-
-        
 
         public TrsWindow(String name, TObservable obs, 
            
@@ -95,12 +90,14 @@ namespace TRStreamProcessor.Stream
             //if ( observer != null)
             //     Subscribe(observer);
         }
+
         public IDisposable Subscribe(IObserver<TrsTupple> observer)
         {
             if (!observers.Contains(observer))
                 observers.Add(observer);
             return new Unsubscriber(observers, observer);
         }
+
         private class Unsubscriber : IDisposable
         {
             private List<IObserver<TrsTupple>> _observers;
@@ -175,9 +172,7 @@ namespace TRStreamProcessor.Stream
                     }
                    );
         }
-
         
-
         void OnRowUpdated(string key)
         {
             Debug.WriteLine("{0}: Recomputed   {1}:{2}" ,Name, key, CurrWindowValues[key].ComputedColumns[0].sum);
@@ -199,9 +194,7 @@ namespace TRStreamProcessor.Stream
            
 
         }
-
-    
-      
+        
         void HandleIncomingTupples(TTuppleIn t)
         {
             // put into queue for later removeall based on time
@@ -297,7 +290,6 @@ namespace TRStreamProcessor.Stream
             OnRowUpdated(RowKey(t));
         }
         
-        
         private string RowKey(TTuppleIn t)
         {
             StringBuilder sb = new StringBuilder();
@@ -311,7 +303,9 @@ namespace TRStreamProcessor.Stream
 
         void HandleOutGoingTupple(TTuppleIn t)
         {
-            CurrWindowValues.AddOrUpdate(RowKey(t), (k) =>
+            Tuple<String, bool> shouldDelete = null;
+            string rowKey = RowKey(t);
+            CurrWindowValues.AddOrUpdate(rowKey, (k) =>
             {
                 throw new Exception("Cannot Expire Row  " + k);
             },
@@ -320,7 +314,9 @@ namespace TRStreamProcessor.Stream
 
                 foreach (var colStat in row.ComputedColumns)
                 {
-                    colStat.count++;
+                    colStat.count--;
+                    if ( colStat.count == 0 )
+                        shouldDelete = new Tuple<string, bool>(rowKey, true);
                     switch (ComputedColumns[colStat.underlyingName].ttype)
                     {
                         case TrsType.Flt:
@@ -349,7 +345,13 @@ namespace TRStreamProcessor.Stream
                
                 return row;
                    });
-            OnRowUpdated(RowKey(t));
+            OnRowUpdated(rowKey);
+            if (shouldDelete != null)
+            {
+                Row aRow;
+                CurrWindowValues.TryRemove(shouldDelete.Item1, out aRow);
+            }
+
         }
         
         private class ColumnStatistic
@@ -459,6 +461,37 @@ namespace TRStreamProcessor.Stream
         {
             Cts.Cancel();
         }
+
+        public long CountAggregated()
+        {
+            return  CurrWindowValues.Count;
+        }
+
+        public long CountDetail(string key)
+        {
+            // for now only one ComputedColumn per row
+            return CurrWindowValues[key].ComputedColumns[0].count;
+        }
+
+        public long CountDetail()
+        {
+            return ValuesInProgress.Count;
+        }
+
+        public IEnumerable<Tuple<string, double>> Top(int n)
+        {
+          
+            // for now only one ComputedColumn per row
+            return
+                (IEnumerable<Tuple<string, double>>)
+                    CurrWindowValues.Select(r => Tuple.Create(r.Key, r.Value.ComputedColumns[0].sum))
+                        .OrderByDescending(item => item.Item2).Take(n);
+            /*{ r.Key,  r.Value.ComputedColumns[0].sum})*/
+            //   .OrderByDescending(i => i.sum).Take(n);
+        }
+
+       
+
 
        
 
