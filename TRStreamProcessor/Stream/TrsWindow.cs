@@ -42,6 +42,7 @@ namespace TRStreamProcessor.Stream
         private readonly ConcurrentDictionary<string, Row> CurrWindowValues = new ConcurrentDictionary<string, Row>();
         private readonly TimeSpan WindowDelay ;//= TimeSpan.FromSeconds(60);
         private readonly List<TrsString> GroupByColumns;
+        public readonly Guid Guid = Guid.NewGuid();
         private readonly Dictionary<string, TrsLong> ComputedColumns = new Dictionary<string,TrsLong>();
         private readonly TaskScheduler InCommingScheduler;
         private readonly TaskScheduler OutGoingScheduler;
