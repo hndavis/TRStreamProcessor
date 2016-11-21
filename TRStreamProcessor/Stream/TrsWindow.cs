@@ -62,7 +62,7 @@ namespace TRStreamProcessor.Stream
             TaskScheduler outGoingScheduler = null) : base (name,obs)
 
         {
-            Obs = obs;
+            SubscribeTo(obs);
             GroupByColumns = groubyColumns;
             foreach (var col in computedColumns)
             {
@@ -80,25 +80,14 @@ namespace TRStreamProcessor.Stream
                 WindowDelay = TimeSpan.FromSeconds(amount);
             }
 
-           
-
             KeyValueDef = new TrsString("keyValue") { Name = "RowKey" };
 
             TrsLong dataPointSumDef = new TrsLong(0) { Name = "Sum" };
-
             var defDataPointTupple = new TrsTuppleDef(KeyValueDef, dataPointSumDef);
             OutDataPointFactory = new TrsTuppleFactory(defDataPointTupple);
-            //if ( observer != null)
-            //     Subscribe(observer);
         }
 
-        public IDisposable Subscribe(IObserver<TrsTupple> observer)
-        {
-            if (!observers.Contains(observer))
-                observers.Add(observer);
-            return new Unsubscriber(observers, observer);
-        }
-
+      
         private class Unsubscriber : IDisposable
         {
             private List<IObserver<TrsTupple>> _observers;
@@ -142,38 +131,13 @@ namespace TRStreamProcessor.Stream
             }
         }
 
-        IDisposable MsgHandle;
-        private readonly IObservable<TTuppleIn> Obs;
-
-        public void Dispose()
-        {
-            MsgHandle.Dispose();
-        }
-
+      
         public void Listen()
         {
-            Start();  // this windows processing incomming tupples
 
-            MsgHandle = Obs.Subscribe(t =>
-            {
-//                Console.WriteLine("{0}  Received On {1} --> {2} ", Name, t.ToString(), Thread.CurrentThread.ManagedThreadId);
-                HandleIncomingTupples(t);
-            }
-                );
+             Start();  // this windows processing incomming tupples
         }
-        protected override IObservable<TTupleOut> setUpOutStream()
-        {
-           
-            return (IObservable<TTupleOut>)Observable.Create<TTupleOut>(
-                    observer =>
-                    {
-                        OutStream = (TObserver)observer;
-
-                        return Disposable.Create(() => Console.WriteLine("Observer has unsubscribed"));
-                    }
-                   );
-        }
-        
+       
         void OnRowUpdated(string key)
         {
             Debug.WriteLine("{0}: Recomputed   {1}:{2}" ,Name, key, CurrWindowValues[key].ComputedColumns[0].sum);
@@ -182,21 +146,27 @@ namespace TRStreamProcessor.Stream
             
             var dataPointSum = new TrsLong((int)CurrWindowValues[key].ComputedColumns[0].sum) { Name = "Sum" };
 
+            var tOut = OutDataPointFactory.Create(keyValue, dataPointSum);
 
-            if (OutStream != null)
+            foreach (var observer in _observers)
             {
-                var tOut = OutDataPointFactory.Create(keyValue, dataPointSum);
-                if (tOut != null)
-                    OutStream.OnNext((TTupleOut) tOut); //todo   should not need cast -- find other way
-
-              
+                observer.OnNext((TTupleOut)tOut); //todo   should not need cast -- find other way
             }
+         
+           
 
            
 
         }
-        
-        void HandleIncomingTupples(TTuppleIn t)
+
+
+        public override void EnStream(TTuppleIn t)
+        {
+            process(t);
+        }
+
+        //HandleIncomingTupples
+        public override void process(TTuppleIn t)
         {
             // put into queue for later removeall based on time
             ValuesInProgress.Enqueue(new TrsTuppleQWraper<TTuppleIn>(t, WindowDelay));
@@ -492,9 +462,5 @@ namespace TRStreamProcessor.Stream
         }
 
        
-
-
-       
-
     }
 }

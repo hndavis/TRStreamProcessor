@@ -65,7 +65,7 @@ namespace TRStreamProcessor
             var winTask = Task.Factory.StartNew(() =>
             {
                 var simpleWindowSum = new TrsWindow<IObservable<TrsTupple>, IObserver<TrsTupple>, TrsTupple, TrsTupple>
-                ("BASIC MATH", entryPoint.GetObservable(), 
+                ("BASIC MATH", entryPoint, 
                     groupbyColumns, computeColumns, 60, TrsWindowType.MaxNum);
                 simpleWindowSum.Subscribe(item =>
                 {
@@ -97,7 +97,7 @@ namespace TRStreamProcessor
 
                     var sampleTuple = applDataPointFactory.Create(applicationId, userName, dataPoints);
 
-                    entryPoint.process(sampleTuple);
+                    entryPoint.EnStream(sampleTuple);
                     Thread.Sleep(1400);
 
                 }

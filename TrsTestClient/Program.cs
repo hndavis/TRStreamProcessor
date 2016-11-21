@@ -68,31 +68,58 @@ namespace TrsTestClient
             var winTask = Task.Factory.StartNew(() =>
             {
                 var simpleWindowSum = new TrsWindow<IObservable<TrsTupple>, IObserver<TrsTupple>, TrsTupple, TrsTupple>
-                ("BASIC MATH", entryPoint.GetObservable(),
+                ("BASIC MATH", entryPoint,
                     groupbyColumns, computeColumns, 60, TrsWindowType.MaxNum);
                 simpleWindowSum.Subscribe(item =>
                 {
-                    Console.WriteLine("Processed Item {0} {1} ", item.Fields["RowKey"], item.Fields["Sum"]);
+                    Console.WriteLine("1 Processed Item {0} {1} ", item.Fields["RowKey"], item.Fields["Sum"]);
                 });
                 simpleWindowSum.Listen();
-                while (true)
-                {
-                    Thread.Sleep(1000 * 10);
-                    Console.WriteLine("\t\t\t\t\t Agg:");
-                    Console.Write("\t\t\t\t\t");
-                    Console.WriteLine(" Counts {0} ==> {1}", simpleWindowSum.CountDetail(), simpleWindowSum.CountAggregated() );
-                    var topRows = simpleWindowSum.Top(1);
-                    Console.WriteLine("\t\t\t\t\t\t Top:");
-                    foreach (var topRow in topRows)
-                    {
-                        Console.WriteLine("\t\t\t\t\t\t {0} {1} {2}", topRow.Item1, topRow.Item2, simpleWindowSum.CountDetail(topRow.Item1));
-                    }
+                //while (true)
+                //{
+                //    Thread.Sleep(1000 * 10);
+                //    Console.WriteLine("1\t\t\t\t\t Agg:");
+                //    Console.Write("1\t\t\t\t\t");
+                //    Console.WriteLine(" Counts {0} ==> {1}", simpleWindowSum.CountDetail(), simpleWindowSum.CountAggregated() );
+                //    var topRows = simpleWindowSum.Top(1);
+                //    Console.WriteLine("1\t\t\t\t\t\t Top:");
+                //    foreach (var topRow in topRows)
+                //    {
+                //        Console.WriteLine("1\t\t\t\t\t\t {0} {1} {2}", topRow.Item1, topRow.Item2, simpleWindowSum.CountDetail(topRow.Item1));
+                //    }
 
-                   Console.WriteLine();
-                }
+                //   Console.WriteLine();
+                //}
             });
 
-           // winTask.Wait(); // make sure subscribed
+            var winTask2 = Task.Factory.StartNew(() =>
+            {
+                var simpleWindowSum2 = new TrsWindow<IObservable<TrsTupple>, IObserver<TrsTupple>, TrsTupple, TrsTupple>
+                ("BASIC MATH", entryPoint,
+                    groupbyColumns, computeColumns, 60, TrsWindowType.MaxNum);
+                simpleWindowSum2.Subscribe(item =>
+                {
+                    Console.WriteLine("2 Processed Item {0} {1} ", item.Fields["RowKey"], item.Fields["Sum"]);
+                });
+                simpleWindowSum2.Listen();
+                //while (true)
+                //{
+                //    Thread.Sleep(1000 * 10);
+                //    Console.WriteLine("2\t\t\t\t\t Agg:");
+                //    Console.Write("2\t\t\t\t\t");
+                //    Console.WriteLine(" Counts {0} ==> {1}", simpleWindowSum2.CountDetail(), simpleWindowSum2.CountAggregated());
+                //    var topRows = simpleWindowSum2.Top(1);
+                //    Console.WriteLine("2\t\t\t\t\t\t Top:");
+                //    foreach (var topRow in topRows)
+                //    {
+                //        Console.WriteLine("2\t\t\t\t\t\t {0} {1} {2}", topRow.Item1, topRow.Item2, simpleWindowSum2.CountDetail(topRow.Item1));
+                //    }
+
+                //    Console.WriteLine();
+                //}
+            });
+
+            // winTask.Wait(); // make sure subscribed
 
             var defDataPointTupple = new TrsTuppleDef(applicationIdDef, userNameDef, dataPointsDef);
             TrsTuppleFactory applDataPointFactory = new TrsTuppleFactory(defDataPointTupple);
@@ -115,7 +142,7 @@ namespace TrsTestClient
 
                     var sampleTuple = applDataPointFactory.Create(applicationId, userName, dataPoints);
 
-                    entryPoint.process(sampleTuple);
+                    entryPoint.EnStream(sampleTuple);
                     Thread.Sleep(1400);
 
                 }
@@ -136,7 +163,7 @@ namespace TrsTestClient
 
                     var sampleTuple = applDataPointFactory.Create(applicationId, userName, dataPoints);
 
-                    entryPoint.process(sampleTuple);
+                    entryPoint.EnStream(sampleTuple);
                     Thread.Sleep(4500);
 
                 }
