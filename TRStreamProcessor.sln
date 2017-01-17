@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrsTestClient", "TrsTestCli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrsStreamsHost", "TrsStreamsHost\TrsStreamsHost.csproj", "{835A1A8E-125C-4AA1-831B-310E0E110C5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRMessage", "TRMessage\TRMessage.csproj", "{4D7A0A0C-FED6-4D63-A3A3-81360790CCFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{835A1A8E-125C-4AA1-831B-310E0E110C5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{835A1A8E-125C-4AA1-831B-310E0E110C5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{835A1A8E-125C-4AA1-831B-310E0E110C5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D7A0A0C-FED6-4D63-A3A3-81360790CCFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D7A0A0C-FED6-4D63-A3A3-81360790CCFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D7A0A0C-FED6-4D63-A3A3-81360790CCFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D7A0A0C-FED6-4D63-A3A3-81360790CCFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
