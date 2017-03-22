@@ -16,6 +16,14 @@ namespace TRStreamProcessor
     {
         static void Main(string[] args)
         {
+            // start endpoint service
+            var wcfService = ProtocolEndPointFactory.GetEndPoint(ProtocolType.WCFBasicHttp);
+            Console.Write("\nPress any key to continue... ");
+            Console.ReadLine();
+           
+        }
+        static void TestInMemoryFunc(string[] args)
+        {
           
            var entryPoint = new TrsStream<IObservable<TrsTupple>, IObserver<TrsTupple>,  TrsTupple, TrsTupple>("EntryPoint", null); // null means does not listen to any outside stream
 

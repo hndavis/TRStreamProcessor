@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="TrsStreamsHost.Service1" CodeBehind="TrsStreamsService.svc.cs" %>

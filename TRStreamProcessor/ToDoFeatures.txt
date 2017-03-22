@@ -1,0 +1,1 @@
+﻿be able to reset window length without rebooting

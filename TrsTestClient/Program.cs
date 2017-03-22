@@ -16,7 +16,8 @@ namespace TrsTestClient
         static void Main(string[] args)
         {
 
-
+            Console.Write("\nPress any key to continue... ");
+            Console.ReadLine();
 
 
 
