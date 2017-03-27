@@ -7,12 +7,10 @@ using System.ServiceModel;
 
 namespace TRStreamProcessor.Service
 {
-    [ServiceContract]
-    public interface IStreamOutService
+    
+    public interface INotificationServiceCallBack
     {
-        [OperationContract]
-        string GetMessageQueueName();
+        [OperationContract(IsOneWay = true)]
+        void OnNotificationSend(string message);
     }
-
-
 }

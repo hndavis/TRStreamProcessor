@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using RabbitMQ.Client;
 using EasyNetQ;
 using TRStreamProcessor.Data;
 using TRStreamProcessor.Msg;
+using TRStreamProcessor.Service;
 using TRStreamProcessor.Stream;
 
 namespace TRStreamProcessor
@@ -17,11 +19,32 @@ namespace TRStreamProcessor
         static void Main(string[] args)
         {
             // start endpoint service
+
+
+            textWCFDuplex();
+
+
+        }
+
+        static void textWCFDuplex()
+        {
+            var svcHost = new ServiceHost(typeof(NotificationService));
+            svcHost.Open();
+            Console.WriteLine("Available Endpoints :\n");
+            svcHost.Description.Endpoints.ToList().ForEach
+                 (endpoint => Console.WriteLine(endpoint.Address.ToString()));
+            Console.ReadLine();
+            svcHost.Close();
+
+        }
+
+        static void testWCFSimplex()
+        {
             var wcfService = ProtocolEndPointFactory.GetEndPoint(ProtocolType.WCFBasicHttp);
             Console.Write("\nPress any key to continue... ");
             Console.ReadLine();
-           
         }
+      
         static void TestInMemoryFunc(string[] args)
         {
           
@@ -134,5 +157,7 @@ namespace TRStreamProcessor
             Thread.Sleep(200000);
            // winTask.Dispose();
         }
+
     }
+   
 }

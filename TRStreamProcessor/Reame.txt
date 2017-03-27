@@ -1,0 +1,1 @@
+﻿https://www.codeproject.com/articles/660479/duplex-service-in-wcf

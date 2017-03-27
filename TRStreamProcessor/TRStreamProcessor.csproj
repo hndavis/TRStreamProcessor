@@ -93,7 +93,11 @@
     <Compile Include="Msg\WCFHttpStreamEndPoint.cs" />
     <Compile Include="Msg\WCFStreamEndPoint.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Service\INotificationServiceCallBack.cs" />
+    <Compile Include="Service\INotificationServices.cs" />
     <Compile Include="Service\IStreamOutService.cs" />
+    <Compile Include="Service\NotifactionServiceCallBack.cs" />
+    <Compile Include="Service\NotificationService.cs" />
     <Compile Include="Service\StreamOutService.cs" />
     <Compile Include="Stream\IActiveWindow.cs" />
     <Compile Include="Stream\IStreamListener.cs" />
@@ -108,6 +112,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Reame.txt" />
     <Content Include="ToDoFeatures.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
