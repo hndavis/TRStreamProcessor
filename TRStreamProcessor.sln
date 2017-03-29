@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRMessage", "TRMessage\TRMe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCFTestClient", "WCFTestClient\WCFTestClient.csproj", "{4637EB59-DB84-419E-9767-A4294161012A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClients", "TestClients", "{CB851A40-148A-48E8-8FC2-4AAF95A77232}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WCFBroadCastClient", "WCFBroadCastClient\WCFBroadCastClient.csproj", "{28A73186-A560-49B5-AA9A-431831ACC207}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,8 +43,16 @@ Global
 		{4637EB59-DB84-419E-9767-A4294161012A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4637EB59-DB84-419E-9767-A4294161012A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4637EB59-DB84-419E-9767-A4294161012A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28A73186-A560-49B5-AA9A-431831ACC207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A73186-A560-49B5-AA9A-431831ACC207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28A73186-A560-49B5-AA9A-431831ACC207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28A73186-A560-49B5-AA9A-431831ACC207}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4637EB59-DB84-419E-9767-A4294161012A} = {CB851A40-148A-48E8-8FC2-4AAF95A77232}
+		{28A73186-A560-49B5-AA9A-431831ACC207} = {CB851A40-148A-48E8-8FC2-4AAF95A77232}
 	EndGlobalSection
 EndGlobal

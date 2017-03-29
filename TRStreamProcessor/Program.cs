@@ -10,6 +10,7 @@ using EasyNetQ;
 using TRStreamProcessor.Data;
 using TRStreamProcessor.Msg;
 using TRStreamProcessor.Service;
+using TRStreamProcessor.Service.Broadcastor;
 using TRStreamProcessor.Stream;
 
 namespace TRStreamProcessor
@@ -21,12 +22,26 @@ namespace TRStreamProcessor
             // start endpoint service
 
 
-            textWCFDuplex();
+            // testWCFDuplex();
+            testWCFBroadcast();
+
+
 
 
         }
 
-        static void textWCFDuplex()
+        static void testWCFBroadcast()
+        {
+            var svcHost = new ServiceHost(typeof(BroadcastorService));
+            svcHost.Open();
+            Console.WriteLine("Available Endpoints :\n");
+            svcHost.Description.Endpoints.ToList().ForEach
+                 (endpoint => Console.WriteLine(endpoint.Address.ToString()));
+            Console.ReadLine();
+            svcHost.Close();
+        }
+
+        static void testWCFDuplex()
         {
             var svcHost = new ServiceHost(typeof(NotificationService));
             svcHost.Open();

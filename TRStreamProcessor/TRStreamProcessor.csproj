@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D7E750A9-4D9B-49F7-8232-4B7885959DCA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TRStreamProcessor</RootNamespace>
     <AssemblyName>TRStreamProcessor</AssemblyName>
@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\master\api\external\bin64\deb\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -27,13 +27,14 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\master\api\external\bin64\rel\</OutputPath>
+    <OutputPath>bin\release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TRStreamProcessor.Program</StartupObject>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EasyNetQ, Version=0.62.1.445, Culture=neutral, processorArchitecture=MSIL">
@@ -67,6 +68,7 @@
       <HintPath>..\packages\System.Reactive.Linq.3.0.0\lib\net45\System.Reactive.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -84,6 +86,8 @@
     <Compile Include="Data\TrsTuppleDef.cs" />
     <Compile Include="Data\TrsTuppleFactory.cs" />
     <Compile Include="Data\TrsType.cs" />
+    <Compile Include="Service\Broadcastor\BroadcastorService.cs" />
+    <Compile Include="Service\Broadcastor\EventDataType.cs" />
     <Compile Include="Msg\ENPing.cs" />
     <Compile Include="Msg\Hello.cs" />
     <Compile Include="Msg\IStreamProcess.cs" />
@@ -93,6 +97,8 @@
     <Compile Include="Msg\WCFHttpStreamEndPoint.cs" />
     <Compile Include="Msg\WCFStreamEndPoint.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Service\Broadcastor\IBroadcastorCallBack.cs" />
+    <Compile Include="Service\Broadcastor\IBroadcastorService.cs" />
     <Compile Include="Service\INotificationServiceCallBack.cs" />
     <Compile Include="Service\INotificationServices.cs" />
     <Compile Include="Service\IStreamOutService.cs" />
@@ -108,11 +114,13 @@
     <Compile Include="TPL\TrsScheduler.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Web.config" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Reame.txt" />
+    <Content Include="Service.svc" />
     <Content Include="ToDoFeatures.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="65dba315-653c-478b-ba8a-1c4936cac9df" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/BroadcastorService/Service.svc " Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="BroadcastorService.wsdl" MetadataType="Wsdl" ID="affa7558-3859-45e1-844f-454f0e4e19e4" SourceId="1" SourceUrl="http://u6035303-tpl-a.ten.thomsonreuters.com/BroadcastorService/Service.svc?wsdl" />
+    <MetadataFile FileName="Service.xsd" MetadataType="Schema" ID="b34b2c4c-dd59-4c5d-bbd0-07fd58f51c8f" SourceId="1" SourceUrl="http://u6035303-tpl-a.ten.thomsonreuters.com/BroadcastorService/Service.svc?xsd=xsd1" />
+    <MetadataFile FileName="Service1.xsd" MetadataType="Schema" ID="efcd506f-28ef-462c-ab77-3826bb325876" SourceId="1" SourceUrl="http://u6035303-tpl-a.ten.thomsonreuters.com/BroadcastorService/Service.svc?xsd=xsd2" />
+    <MetadataFile FileName="Service.disco" MetadataType="Disco" ID="8e8f18a9-9dd3-4c9c-9e85-916f836594ef" SourceId="1" SourceUrl="http://u6035303-tpl-a.ten.thomsonreuters.com/BroadcastorService/Service.svc?disco" />
+    <MetadataFile FileName="Service2.xsd" MetadataType="Schema" ID="320661bd-2378-43b7-8483-843359f51a89" SourceId="1" SourceUrl="http://u6035303-tpl-a.ten.thomsonreuters.com/BroadcastorService/Service.svc?xsd=xsd0" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Service="TRStreamProcessor.Service.Broadcastor.BroadcastorService" %>
